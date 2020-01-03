@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Service\UserService;
 use Illuminate\Http\Request;
 
-class UserController extends Controller
+
+class UserController extends ApiController
 {
     public $userService;
 
@@ -18,19 +18,25 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getUser()
     {
         $getUser = $this->userService->getUser();
 
-        return response()->json($getUser, 201);
+        if(!$getUser){
+            return $this->respondNotFound(
+                config('error.user_not_found.code'),
+                config('error.user_not_found.message')
+            );
+        }
+        return $this->respond($getUser);
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function create(Request $request)
     {
@@ -38,27 +44,39 @@ class UserController extends Controller
 
         $user = $this->userService->createUser($data);
 
-        return response()->json($user, 201);
+        if (empty($user['user_name'] && $user['password'])){
+            return $this->respondNotFound(
+                config('error.user_not_found.code'),
+                config('error.user_not_found.message')
+            );
+        }
+        return $this->respondCreated($user);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getUserDetails($id)
     {
         $getUserDetails = $this->userService->getUserDetails($id);
 
-        return response()->json($getUserDetails, 201);
+        if(!$getUserDetails){
+            return $this->respondNotFound(
+                config('error.user_not_found.code'),
+                config('error.user_not_found.message')
+            );
+        }
+        return $this->respond($getUserDetails);
     }
 
     /**
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function updateUser(Request $request, $id)
     {
@@ -66,20 +84,33 @@ class UserController extends Controller
 
         $userUpdate = $this->userService->userUpdate($dataUser, $id);
 
-        return response()->json($userUpdate, 201);
+        if(!$userUpdate){
+            return $this->respondNotFound(
+                config('error.user_not_found.code'),
+                config('error.user_not_found.message')
+            );
+        }
+        return $this->respondUpdate($userUpdate);
+
     }
 
     /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function deleteUser($id)
     {
         $userDelete = $this->userService->userDelete($id);
 
-        return response()->json($userDelete, 201);
+        if ($userDelete != 1){
+            return $this->respondNotFound(
+                config('error.user_not_found.code'),
+                config('error.user_not_found.message')
+            );
+        }
+        return $this->respondDelete();
     }
 
     /**

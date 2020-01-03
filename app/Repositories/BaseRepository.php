@@ -22,7 +22,7 @@ class BaseRepository
 
     public function getUser($id)
     {
-        return $this->model->where('id', $id)->get();
+        return $this->model->where('id', $id)->first();
     }
 
     public function delete($id)
